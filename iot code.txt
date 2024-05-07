@@ -1,0 +1,141 @@
+#define BLYNK_TEMPLATE_ID "TMPLGPz93eS1"
+#define BLYNK_DEVICE_NAME "HACKTHON"
+#define BLYNK_AUTH_TOKEN "D7cBIY5oC3FraxL5pLtn87gnn4VaoI0N"
+#define BLYNK_PRINT Serial 
+#include <WiFi.h>  
+#include <WiFiClient.h> 
+#include<ESP32Servo.h> 
+Servo myservo;
+#include <BlynkSimpleEsp32.h>  
+#include <NewPing.h> 
+char auth[]=BLYNK_AUTH_TOKEN; 
+char ssid[]="Vishnu" ; 
+char pass[]="vishnu578";  
+BlynkTimer timer;
+#define ir1 13 
+#define ir2 14 
+#define ir3 15 
+#define ir4 16 
+#define led1 18 
+#define led2 19 
+#define led3 17 
+#define led4 21  
+#define ldr1 27
+#define ldr2 25
+#define ldr3 23 
+int pos =180; 
+int tolarance =200; 
+void setup() {
+  Serial.begin(115200); 
+  Serial.begin(9600);
+  myservo.attach(26); 
+  pinMode(ir1,INPUT); 
+  pinMode(ir2,INPUT);
+  pinMode(ir3,INPUT);
+  pinMode(ir4,INPUT);
+  
+  pinMode(led1,OUTPUT);
+  pinMode(led2,OUTPUT); 
+  pinMode(led3,OUTPUT); 
+  pinMode(led4,OUTPUT); 
+  
+  pinMode(ldr1,INPUT); 
+  pinMode(ldr2,INPUT); 
+  pinMode(ldr3,INPUT);
+  myservo.write(pos); 
+  Blynk.begin(auth,ssid,pass);  
+  delay(1000); 
+} 
+void solarTracking() 
+{ 
+  
+  int elevation = 0;
+  int val1 = analogRead(ldr1); 
+  Serial.println("value 1");
+  Serial.println(val1);
+  
+  int val2 = analogRead(ldr2); 
+  Serial.println("value 2");
+  Serial.println(val2);
+  if((abs(val1-val2))<=tolarance || (abs(val2-val1)<=tolarance)) 
+  { 
+    
+  } 
+  else 
+  { 
+    if(val1>val2) 
+    { 
+      pos = pos+10; 
+      Serial.println("right");
+    } 
+    if(val1<val2) 
+    { 
+      pos = pos -10; 
+      Serial.println("left");
+    }
+  } 
+  if(pos>180) { pos =180; } 
+  if(pos<0) { pos = 0;} 
+  myservo.write(pos); 
+  elevation = 180 - pos; 
+  Serial.println(elevation);
+  Blynk.virtualWrite(V0,elevation);
+  delay(1000);
+  return;
+} 
+void StreetLighting() 
+{ 
+  int a = digitalRead(ir1) ; 
+  int b= digitalRead(ir2) ;  
+  int c = digitalRead(ir3) ;  
+  int d = digitalRead(ir4) ;  
+  if(a==0) 
+  { 
+    digitalWrite(led1,HIGH);
+  } 
+  else 
+  { 
+    digitalWrite(led1,LOW);
+  } 
+  if(b==0) 
+  { 
+    digitalWrite(led2,HIGH);
+  } 
+  else 
+  { 
+    digitalWrite(led2,LOW);
+  } 
+  if(c==0) 
+  { 
+    digitalWrite(led3,HIGH);
+  } 
+  else 
+  { 
+    digitalWrite(led3,LOW);
+  } 
+  if(d==0) 
+  { 
+    digitalWrite(led4,HIGH);
+  } 
+  else 
+  { 
+    digitalWrite(led4,LOW);
+  } 
+  return;  
+  
+}
+
+void loop() { 
+  Blynk.run(); 
+  int x =digitalRead(ldr3);  
+  Serial.println(x);
+  if(x!=0) 
+  { 
+    Serial.println("nyt");
+    StreetLighting();
+  } 
+  else 
+  { 
+    solarTracking();
+  }
+}
